@@ -1,0 +1,5 @@
+local({
+  r <- getOption("repos")
+  r["CRAN"] <- "http://loca-repo1/cran/"
+  options(repos = r)
+})

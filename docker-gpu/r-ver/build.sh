@@ -1,0 +1,1 @@
+docker build -t lsw-r-ver:cuda11.0 .

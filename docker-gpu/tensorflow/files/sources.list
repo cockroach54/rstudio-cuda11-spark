@@ -1,0 +1,6 @@
+deb [trusted=yes] http://loca-repo1/ubuntu bionic main restricted universe
+deb [trusted=yes] http://loca-repo1/ubuntu bionic-security main restricted universe
+deb [trusted=yes] http://loca-repo1/ubuntu bionic-updates main restricted universe
+# deb-src http://loca-repo1/ubuntu bionic main restricted universe
+# deb-src http://loca-repo1/ubuntu bionic-security main restricted universe
+# deb-src http://loca-repo1/ubuntu bionic-updates main restricted universe

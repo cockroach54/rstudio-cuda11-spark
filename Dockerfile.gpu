@@ -12,7 +12,7 @@ ARG repo_host
 # install java 1.8
 RUN apt-get update && \
     apt-get --assume-yes install openjdk-8-jdk
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 
 RUN apt install -y curl libssl-dev libcurl4-openssl-dev libxml2-dev libv8-dev libbz2-dev libpcre2-dev liblzma-dev &&\
@@ -95,17 +95,25 @@ RUN Rscript -e "install.packages(c('keras'))"
 
 
 # -----------add new rgroup users
-# shell script로 만들면 에러남...
+# shell script로 만들면 ㅂ밀번호 변경 안되는 에러남...
 # COPY files/add_ruser.sh /
 # RUN sh add_ruser.sh ruser01 &&\
-#     sh add_ruser.sh ruser02
+#     sh add_ruser.sh ruser02 &&\
+#     sh add_ruser.sh ruser03
 RUN groupadd rgroup -g 9900 &&\
     export new_user=ruser01 &&\
     useradd -m $new_user -u 9901 -g rgroup -G sudo &&\
     echo -e "$new_user\n$new_user"| passwd $new_user &&\
     export new_user=ruser02 &&\
     useradd -m $new_user -u 9902 -g rgroup -G sudo &&\
-    echo -e "$new_user\n$new_user"| passwd $new_user     
+    echo -e "$new_user\n$new_user"| passwd $new_user &&\
+    export new_user=ruser03 &&\
+    useradd -m $new_user -u 9903 -g rgroup -G sudo &&\
+    echo -e "$new_user\n$new_user"| passwd $new_user   
+
+
+# ------------append Renviron for Rstudio
+COPY files/append_renv.sh /
 
 # Set hadoop & spark environment variables
 # 빅팀에서 전역변수 설정 지양하므로 hadoop-env.sh, spark-env.sh 등에서 런타임에 설정되도록 변경
@@ -114,3 +122,5 @@ RUN groupadd rgroup -g 9900 &&\
 # ENV SPARK_HOME /usr/local/spark
 # ENV HIVE_HOME /usr/local/hive
 # ENV PATH=${PATH}:${HADOOP_HOME}/bin:${SPARK_HOME}/bin:${HIVE_HOME}/bin
+
+CMD ["sh", "-c", "/append_renv.sh && /init"]

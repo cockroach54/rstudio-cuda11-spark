@@ -2,8 +2,8 @@
 # https://github.com/RevolutionAnalytics/RHadoop/wiki/Installing-RHadoop-on-RHEL#system-requirements
 
 # Set and add hadoop bin path
-Sys.setenv('HADOOP_HOME' = '/usr/local/hadoop')
-Sys.setenv('PATH' = paste(Sys.getenv("PATH"), '/usr/local/hadoop/bin', sep = ':'))
+# Sys.setenv('HADOOP_HOME' = '/usr/local/hadoop')
+# Sys.setenv('PATH' = paste(Sys.getenv("PATH"), '/usr/local/hadoop/bin', sep = ':'))
 
 library(data.table)
 

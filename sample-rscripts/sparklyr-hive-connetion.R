@@ -1,17 +1,17 @@
 library(sparklyr)
 
 # set SPARK_HOME environment variable
-Sys.setenv('SPARK_HOME' = '/usr/local/spark')
+# Sys.setenv('SPARK_HOME' = '/usr/local/spark')
+SPARK_DRIVER_HOST_IP = Sys.getenv('SPARK_DRIVER_HOST_IP')  # system('bash -c "hostname -I"', intern=TRUE)  # '172.17.0.X'
 SPARK_DRIVER_PORT = Sys.getenv('SPARK_DRIVER_PORT')
 SPARK_DRIVER_BLOCKMANAGER_PORT = as.numeric(SPARK_DRIVER_PORT)+1
 
 # set spark config
-ipaddr = system('bash -c "hostname -I"', intern=TRUE)  # '172.17.0.X'
 scfg = list(
   "spark.driver.host"="loca-ml-gpu",
   "spark.driver.port"=SPARK_DRIVER_PORT,
   "spark.driver.blockManager.port"=SPARK_DRIVER_BLOCKMANAGER_PORT,
-  "spark.driver.bindAddress"=ipaddr,
+  "spark.driver.bindAddress"=SPARK_DRIVER_HOST_IP,
   "spark.sql.catalogImplementation"="hive",
   "spark.hadoop.fs.permissions.umask-mode"="000",
   "hive.metastore.uris"="thrift://loca-edge1:9083",

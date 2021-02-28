@@ -4,7 +4,7 @@ registry_url="prireg:5000"
 
 
 NAME=rstudio-test
-TAG="1.1"
+TAG=cpu
 
 echo "Working for ${NAME}:${TAG}"
 
@@ -25,16 +25,19 @@ docker run -it -d \
           --add-host loca-dn-002:10.36.9.27 \
           --add-host loca-dn-003:10.36.14.123 \
           --add-host loca-ml-gpu:10.41.40.154 \
-          -p 8787:8787 \
-          -p 4041:4041 -p 31001-31010:31001-31010 \
+          -p 1880:8787 \
+          -p 33001-33010:33001-33010 \
+          -e SPARK_DRIVER_PORT=33001 \
           -e ROOT=TRUE \
           -e USER=$main_user -e PASSWORD=$main_user -e USERID=$(id -u $main_user) -e GROUPID=$(id -g $main_user) -e UMASK=002 \
-          -v /fsdata/usr_home/$main_user:/home/$main_user \
-          -v /home/$main_user/rstudio-spark-notebook/hadoop-bin/hadoop:/usr/local/hadoop:ro \
-          -v /home/$main_user/rstudio-spark-notebook/hadoop-bin/hive:/usr/local/hive:ro \
-          -v /home/$main_user/rstudio-spark-notebook/hadoop-bin/spark:/usr/local/spark:ro \
+          -v /fsobzen/workspace:/fsobzen/workspace:ro \
+          -v /etc/localtime:/etc/localtime:ro \
+          -v /home/$main_user/rstudio-spark-docker/sample-rscripts:/home/$main_user/sample-rscripts \
           ${NAME}:${TAG}
+          # -v /fsdata/usr_home/$main_user:/home/$main_user \
+          # -v /fsobzen/workspace:/fsobzen/workspace \
+          # -v /mnt/repo/share/$WORKSPACE_SHARE_GROUP_DIR:/share \
+          # -v /mnt/repo/user/$WORKSPACE_USER:/user \
           # rocker/rstudio:3.6.3-ubuntu18.04 bash
 
-# -p 54321-54330:54321-54330 # for h2o 
 # spark web ui port 4040 -> 4041

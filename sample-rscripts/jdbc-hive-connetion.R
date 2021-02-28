@@ -2,9 +2,9 @@ library(RJDBC)  # https://www.rdocumentation.org/packages/RJDBC/versions/0.2-8/t
 library(DBI)  # https://www.rdocumentation.org/packages/DBI/versions/0.5-1
 
 # make jdbc connection
-jdbc_driver = JDBC(classPath="/usr/local/hive/jdbc/hive-jdbc-3.1.2-standalone.jar")
-# jdbc_driver = JDBC("org.apache.hive.jdbc.HiveDriver", classPath="/usr/local/hive/jdbc/hive-jdbc-3.1.2-standalone.jar")
-conn = dbConnect(jdbc_driver, "jdbc:hive2://loca-edge1:10000", user='ecube')
+jar_path = paste0(Sys.getenv('HIVE_HOME'), "/jdbc/hive-jdbc-3.1.2-standalone.jar", collapse="/")
+jdbc_driver = JDBC("org.apache.hive.jdbc.HiveDriver", classPath=jar_path)
+conn = dbConnect(jdbc_driver, "jdbc:hive2://loca-edge1:10000", user='ecube', password='obzcom1!')
 
 # get sample table
 dbGetQuery(conn, "SHOW DATABASES")

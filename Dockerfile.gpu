@@ -2,12 +2,11 @@
 FROM lsw-rstudio:cuda11.0
 
 ARG repo_host
-# 지금 레포 커넥션 에러남
-# RUN rm -rf /etc/apt/sources.list.d/*
-# ADD files/sources.list /etc/apt/sources.list
-# ADD files/pip.conf /etc/pip.conf
-# ADD files/Rprofile.site /etc/R/Rprofile.site
-# ADD files/Rprofile.site /usr/local/lib/R/etc/
+RUN rm -rf /etc/apt/sources.list.d/*
+ADD files/sources.list /etc/apt/sources.list
+ADD files/pip.conf /etc/pip.conf
+ADD files/Rprofile.site /etc/R/Rprofile.site
+ADD files/Rprofile.site /usr/local/lib/R/etc/
 
 # install java 1.8
 RUN apt-get update && \
@@ -24,18 +23,20 @@ RUN apt install -y curl libssl-dev libcurl4-openssl-dev libxml2-dev libv8-dev li
   'randomForest', 'reshape2', 'reshape', 'gbm', 'R6'))"
   # 'xgboost'는 gpu버전 직접 빌드이므로 제외
 
-# ----------h2o----------
-COPY files/h2o-3.32.0.3.zip /usr/local/h2o-3.32.0.3.zip
-RUN  unzip /usr/local/h2o-3.32.0.3.zip -d /usr/local &&\
-  R CMD INSTALL /usr/local/h2o-3.32.0.3/R/h2o_3.32.0.3.tar.gz &&\
-  rm /usr/local/h2o-3.32.0.3.zip
-
 # ----------sparklyR----------
 # for add JAVA_HOME config
 # rsparkling은 CRAN버전은 유지보수 안되므로 직접 레포에서 설치
 # install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.3-1-3.0/R")
 RUN R CMD javareconf &&\
     Rscript -e "install.packages(c('sparklyr', 'DBI', 'RJDBC'))"
+
+
+# ----------h2o----------
+COPY files/h2o-3.32.0.3.zip /usr/local/h2o-3.32.0.3.zip
+RUN  unzip /usr/local/h2o-3.32.0.3.zip -d /usr/local &&\
+  R CMD INSTALL /usr/local/h2o-3.32.0.3/R/h2o_3.32.0.3.tar.gz &&\
+  rm /usr/local/h2o-3.32.0.3.zip
+
 
 # ----------xgb----------
 # install.packages(c('data.table', 'magrittr', 'stringi', 'jsonlite'))
@@ -60,11 +61,10 @@ ENV RETICULATE_PYTHON=/usr/local/bin/python
 COPY files/libstdc++.so.6.0.27 /usr/lib/x86_64-linux-gnu
 RUN cd /usr/lib/x86_64-linux-gnu &&\
     rm libstdc++.so.6 &&\
-    ln -s libstdc++.so.6.0.27 libstdc++.so.6 &&\
-    ls -lh libstdc++.so.6*
+    ln -s libstdc++.so.6.0.27 libstdc++.so.6
 RUN apt-get install --assume-yes libopenblas-dev pbzip2 &&\
-    pip install h2o4gpu &&\
-    Rscript -e "install.packages(c('reticulate'))"
+    Rscript -e "install.packages(c('reticulate'))" &&\
+    pip install h2o4gpu -i https://pypi.python.org/simple
 RUN cd /usr/local &&\
     git clone https://github.com/h2oai/h2o4gpu.git &&\
     cd h2o4gpu &&\
@@ -76,51 +76,9 @@ ENV TENSORFLOW_PYTHON=/usr/local/bin/python
 RUN Rscript -e "install.packages(c('keras'))"
 
 
-# # ----------lgbm----------
-# # https://lightgbm.readthedocs.io/en/latest/GPU-Tutorial.html
-# # 현재 도커에서 nvidia-opencl 설치 문제?? 있는것 같음 https://bbs.archlinux.org/viewtopic.php?id=241866
-# # Rscript -e "install.packages(c('data.table', 'magrittr', 'stringi', 'jsonlite', 'R6'))"
-# RUN apt install -y ocl-icd-libopencl1 ocl-icd-opencl-dev libboost-dev libboost-system-dev libboost-filesystem-dev &&\
-#     cd /usr/local &&\
-#     git clone --recursive https://github.com/microsoft/LightGBM &&\
-#     cd LightGBM &&\
-#     mkdir build &&\
-#     cd build &&\
-#     cmake -DUSE_GPU=1 -DOpenCL_LIBRARY=/usr/local/cuda/lib64/libOpenCL.so -DOpenCL_INCLUDE_DIR=/usr/local/cuda/include/ .. &&\ 
-#     make -j$(nproc) &&\
-#     mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd && \
-#     cd .. &&\
-#     Rscript build_r.R --use-gpu
-# # https://stackoverflow.com/questions/50627963/lightgbmerror-bno-opencl-device-found ???
+# ------------set system env and Renviron.site for Rstudio
+COPY ./files/hadoop-compilation.sh /etc/profile.d/
+COPY ./files/rstudio-entrypoint.sh /usr/local/bin/
 
-
-# -----------add new rgroup users
-# shell script로 만들면 ㅂ밀번호 변경 안되는 에러남...
-# COPY files/add_ruser.sh /
-# RUN sh add_ruser.sh ruser01 &&\
-#     sh add_ruser.sh ruser02 &&\
-#     sh add_ruser.sh ruser03
-RUN groupadd rgroup -g 9900 &&\
-    export new_user=ruser01 &&\
-    useradd -m $new_user -u 9901 -g rgroup -G sudo &&\
-    echo -e "$new_user\n$new_user"| passwd $new_user &&\
-    export new_user=ruser02 &&\
-    useradd -m $new_user -u 9902 -g rgroup -G sudo &&\
-    echo -e "$new_user\n$new_user"| passwd $new_user &&\
-    export new_user=ruser03 &&\
-    useradd -m $new_user -u 9903 -g rgroup -G sudo &&\
-    echo -e "$new_user\n$new_user"| passwd $new_user   
-
-
-# ------------append Renviron for Rstudio
-COPY files/append_renv.sh /
-
-# Set hadoop & spark environment variables
-# 빅팀에서 전역변수 설정 지양하므로 hadoop-env.sh, spark-env.sh 등에서 런타임에 설정되도록 변경
-# ENV HADOOP_HOME /usr/local/hadoop
-# ENV HADOOP_CONF_DIR /usr/local/hadoop/etc/hadoop
-# ENV SPARK_HOME /usr/local/spark
-# ENV HIVE_HOME /usr/local/hive
-# ENV PATH=${PATH}:${HADOOP_HOME}/bin:${SPARK_HOME}/bin:${HIVE_HOME}/bin
-
-CMD ["sh", "-c", "/append_renv.sh && /init"]
+ENTRYPOINT ["/usr/local/bin/rstudio-entrypoint.sh"]
+CMD ["/init"]

@@ -1,0 +1,1 @@
+docker build -t lsw-rstudio:cpu .

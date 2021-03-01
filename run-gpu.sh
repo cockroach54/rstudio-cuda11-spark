@@ -1,17 +1,13 @@
 #!/bin/sh
 
+# MAIN_USER=ecube
+MAIN_USER=$USER
 NAME=rstudio-test-gpu
 TAG=cuda11.0
 
-echo "Working for ${NAME}:${TAG}"
+echo "Working for dockr image [${NAME}:${TAG}]"
 
-# main_user=ecube
-main_user=$USER
-mkdir -p /fsdata/usr_home/$main_user
-chown $main_user:$main_user /fsdata/usr_home/$main_user
-chmod 770 /fsdata/usr_home/$main_user
 
-# https://hub.docker.com/r/rocker/rstudio
 # docker run -it --rm \
 docker run -it -d \
           --name ${NAME} \
@@ -27,11 +23,14 @@ docker run -it -d \
           -p 33001-33010:33001-33010 \
           -e SPARK_DRIVER_PORT=33001 \
           -e ROOT=TRUE \
-          -e USER=$main_user -e PASSWORD=$main_user -e USERID=$(id -u $main_user) -e GROUPID=$(id -g $main_user) -e UMASK=002 \
+          -e USER=$MAIN_USER -e PASSWORD=$MAIN_USER -e USERID=$(id -u $MAIN_USER) -e GROUPID=$(id -g $MAIN_USER) -e UMASK=002 \
           -v /fsobzen/workspace:/fsobzen/workspace:ro \
           -v /etc/localtime:/etc/localtime:ro \
-          -v /home/$main_user/rstudio-spark-docker/sample-rscripts:/home/$main_user/sample-rscripts \
+          -v /home/$MAIN_USER/rstudio-spark-docker/sample-rscripts:/home/$MAIN_USER/sample-rscripts \
           ${NAME}:${TAG}
-          # -v /fsdata/usr_home/$main_user:/home/$main_user \
-          # ${NAME}:${TAG} bash
 
+# spark web ui port 4040 은 sparkhistory 서버 있으므로 굳이 바인딩하지 않음
+
+# [hadoop cluster web UI] : http://49.50.174.99:50070
+# [yarn cluster web UI] : http://49.50.174.99:8088/cluster/apps/RUNNING
+# [spark history] : http://118.67.132.19:10003/

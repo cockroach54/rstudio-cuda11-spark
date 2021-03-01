@@ -70,9 +70,9 @@ model = ml_als(
 predictions = ml_predict(model, partitions$test)
 print(predictions)
 
-# recommend items
-recommends = ml_recommend(model, type='item', n=1)
-print(recommends)
+# # recommend items (오래걸려서 주석처리 해둡니다)
+# recommends = ml_recommend(model, type='item', n=1)
+# print(recommends)
 
 # disconnect spark session
 spark_disconnect(sc)

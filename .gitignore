@@ -7,3 +7,4 @@ hadoop-bin
 
 dev
 deprecated
+!sample-rscripts/deprecated

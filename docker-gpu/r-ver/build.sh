@@ -1,1 +1,1 @@
-docker build -t lsw-r-ver:cuda11.0 .
+docker build -t prireg:5000/rstudio-gpu-r-ver:loca-1.0 .

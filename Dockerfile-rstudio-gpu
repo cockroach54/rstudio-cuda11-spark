@@ -1,0 +1,19 @@
+FROM prireg:5000/rstudio-gpu-base-site:loca-1.0
+
+COPY ./files/Rprofile.site /etc/R/
+COPY ./files/Rprofile.site /usr/local/lib/R/etc/
+COPY ./files/pip.conf /etc/
+COPY ./files/sources.list /etc/apt/
+
+# Mgmt Rest Server
+COPY ./files/rstudio-entrypoint.sh ./files/start-process.sh ./files/stop-process.sh /usr/local/bin/
+COPY ./files/userconf /etc/cont-init.d/
+COPY ./files/hadoop-compilation.sh /etc/profile.d/
+COPY ./files/mgmt-rest /opt/mgmt-rest/
+
+RUN rm -r /etc/services.d/rstudio \
+    && mkdir /etc/services.d/mgmt-rest \
+    && echo '#!/bin/bash -ex' > /etc/services.d/mgmt-rest/run \
+    && echo 'exec /opt/mgmt-rest/bin/start-mgmt-rest.sh' >> /etc/services.d/mgmt-rest/run
+
+ENTRYPOINT ["/init"]

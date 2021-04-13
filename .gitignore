@@ -1,10 +1,14 @@
 docker-gpu/r-ver/cuda11.tar.gz
 
-files/*.zip
-files/libstdc++.so.6.0.27
+# files/*.zip
+# files/libstdc++.so.6.0.27
 
 hadoop-bin
 
 dev
 deprecated
 !sample-rscripts/deprecated
+inykang/
+*.zip
+*.tar.gz
+*.7z

@@ -1,4 +1,4 @@
-FROM lsw-r-ver:cuda11.0
+FROM prireg:5000/rstudio-gpu-r-ver:loca-1.0
 
 # LABEL org.label-schema.license="GPL-2.0" \
 #       org.label-schema.vcs-url="https://github.com/rocker-org/rocker-versioned" \

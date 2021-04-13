@@ -2,7 +2,8 @@ library(sparklyr)
 
 # set SPARK_HOME environment variable
 # Sys.setenv('SPARK_HOME' = '/usr/local/spark')
-SPARK_DRIVER_HOST_IP = Sys.getenv('SPARK_DRIVER_HOST_IP')  # system('bash -c "hostname -I"', intern=TRUE)  # '172.17.0.X'
+# SPARK_DRIVER_HOST_IP = Sys.getenv('SPARK_DRIVER_HOST_IP')  # 현재 entrypoint에 호스트 주소로 하드코딩되어 있어서 에러남
+SPARK_DRIVER_HOST_IP = system('bash -c "hostname -i"', intern=TRUE)  # '172.17.0.X' (컨테이너의 주소 필요)
 SPARK_DRIVER_PORT = Sys.getenv('SPARK_DRIVER_PORT')
 SPARK_DRIVER_BLOCKMANAGER_PORT = as.numeric(SPARK_DRIVER_PORT)+1
 

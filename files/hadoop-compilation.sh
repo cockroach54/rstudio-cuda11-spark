@@ -7,7 +7,6 @@ export HADOOP_HOME=/fsobzen/workspace/hadoop
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export SPARK_HOME=/fsobzen/workspace/spark
 export SPARK_DIST_CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath)
-export SPARK_DRIVER_HOST_IP=$(hostname -I)
 export HIVE_HOME=/fsobzen/workspace/hive
 export HIVE_CONF_DIR=$HIVE_HOME/conf
 export WEBDFS=http://$NAMENODE_HOST:14000

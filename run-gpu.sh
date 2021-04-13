@@ -1,33 +1,68 @@
 #!/bin/sh
 
-# MAIN_USER=ecube
-MAIN_USER=$USER
-NAME=rstudio-test-gpu
-TAG=cuda11.0
+registry_url="prireg:5000"
 
-echo "Working for dockr image [${NAME}:${TAG}]"
+if [ -z "$1" ]
+then 
+  echo "No argument supplied, set registry to ${registry_url}"
+    REGISTRY=${registry_url}
+  else
+    echo "Set registry to $1"
+    REGISTRY=$1
+fi
+
+NAME=rstudio-gpu
+TAG=loca-1.0
+
+#################################
+# Workspace
+WORKSPACE_USER="dongwon"
+WORKSPACE_SHARE_GROUP="ds_team"
+WORKSPACE_SHARE_GROUP_DIR="ds_team"
+NB_UID=$(id -u $WORKSPACE_USER)
+NB_GID=$(id -g $WORKSPACE_USER)
+WORKSPACE_SHARE_GROUP_UID=65534
+WORKSPACE_SHARE_GROUP_GID=5003
+
+#################################
+# Spark
+SPARK_DRIVER_HOST_IP=$(ip route get 1 | sed -n 's/^.*src \([0-9.]*\) .*$/\1/p')
+SPARK_DRIVER_PORT="20004"
+SPARK_DRIVER_BLOCMANAGER_PORT="21004"
+
+#################################
+# Jupyter
+JUPYTER_TOKEN="ecubetoken"
+RSTUDIO_WEB_PORT="8781"
+#H2O_PORT="64324"
+
+################################
+# Mgmt-Rest
+MGMT_REST_PORT="8198"
+
+echo "Working for docker image [${NAME}:${TAG}]"
 
 
 # docker run -it --rm \
-docker run -it -d \
-          --name ${NAME} \
-          --add-host loca-repo1:10.36.20.53 \
-          --add-host loca-edge1:10.36.8.112 \
-          --add-host loca-name:10.36.15.24 \
-          --add-host loca-dn-001:10.36.21.175 \
-          --add-host loca-dn-002:10.36.9.27 \
-          --add-host loca-dn-003:10.36.14.123 \
-          --add-host loca-ml-gpu:10.41.40.154 \
-          --gpus=all \
-          -p 1880:8787 \
-          -p 33001-33010:33001-33010 \
-          -e SPARK_DRIVER_PORT=33001 \
-          -e ROOT=TRUE \
-          -e USER=$MAIN_USER -e PASSWORD=$MAIN_USER -e USERID=$(id -u $MAIN_USER) -e GROUPID=$(id -g $MAIN_USER) -e UMASK=002 \
-          -v /fsobzen/workspace:/fsobzen/workspace:ro \
-          -v /etc/localtime:/etc/localtime:ro \
-          -v /home/$MAIN_USER/rstudio-spark-docker/sample-rscripts:/home/$MAIN_USER/sample-rscripts \
-          ${NAME}:${TAG}
+docker run -d \
+           --name ${NAME}-${WORKSPACE_USER} \
+           --gpus=all \
+           -e USER=$WORKSPACE_USER -e PASSWORD=$WORKSPACE_USER -e USERID=$(id -u $WORKSPACE_USER) -e GROUPID=$(id -g $WORKSPACE_USER) \
+           -e WORKSPACE_SHARE_GROUP=$WORKSPACE_SHARE_GROUP \
+           -e WORKSPACE_SHARE_GROUP_UID=$WORKSPACE_SHARE_GROUP_UID \
+           -e WORKSPACE_SHARE_GROUP_GID=$WORKSPACE_SHARE_GROUP_GID \
+           -e SPARK_DRIVER_HOST_IP=$SPARK_DRIVER_HOST_IP \
+           -e SPARK_DRIVER_PORT=$SPARK_DRIVER_PORT \
+           -e SPARK_DRIVER_BLOCMANAGER_PORT=$SPARK_DRIVER_BLOCMANAGER_PORT \
+           -p $MGMT_REST_PORT:8095 \
+           -p $RSTUDIO_WEB_PORT:8787 \
+           -p $SPARK_DRIVER_PORT:$SPARK_DRIVER_PORT \
+           -p $SPARK_DRIVER_BLOCMANAGER_PORT:$SPARK_DRIVER_BLOCMANAGER_PORT \
+           -v /fsobzen/workspace:/fsobzen/workspace \
+           -v /mnt/repo/share/$WORKSPACE_SHARE_GROUP_DIR:/share \
+           -v /mnt/repo/user/$WORKSPACE_USER:/user \
+           -v /etc/localtime:/etc/localtime:ro \
+           ${REGISTRY}/${NAME}:${TAG}
 
 # spark web ui port 4040 은 sparkhistory 서버 있으므로 굳이 바인딩하지 않음
 
